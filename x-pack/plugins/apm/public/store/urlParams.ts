@@ -8,10 +8,7 @@ import datemath from '@elastic/datemath';
 import { Location } from 'history';
 import { compact, pick } from 'lodash';
 import { createSelector } from 'reselect';
-import {
-  legacyDecodeURIComponent,
-  toQuery
-} from '../components/shared/Links/url_helpers';
+import { toQuery } from '../components/shared/Links/url_helpers';
 import { LOCATION_UPDATE } from './location';
 import { getDefaultTransactionType } from './reactReduxRequest/serviceDetails';
 import { getDefaultDistributionSample } from './reactReduxRequest/transactionDistribution';
@@ -124,13 +121,17 @@ export function urlParamsReducer(
         detailTab: toString(detailTab),
         flyoutDetailTab: toString(flyoutDetailTab),
         spanId: toNumber(spanId),
-        kuery: legacyDecodeURIComponent(kuery),
+        kuery: kuery ? decodeURIComponent(kuery) : undefined,
 
         // path params
         processorEvent,
         serviceName,
-        transactionType: legacyDecodeURIComponent(transactionType),
-        transactionName: legacyDecodeURIComponent(transactionName),
+        transactionType: transactionType
+          ? decodeURIComponent(transactionType)
+          : undefined,
+        transactionName: transactionName
+          ? decodeURIComponent(transactionName)
+          : undefined,
         errorGroupId
       });
     }

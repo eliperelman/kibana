@@ -56,7 +56,7 @@ export const ErrorCountBadge: React.SFC<Props> = ({
       pathname={'/app/apm'}
       hash={`/${idx(transaction, _ => _.service.name)}/errors`}
       query={{
-        kuery: legacyEncodeURIComponent(
+        kuery: encodeURIComponent(
           `trace.id : "${transaction.trace.id}" and transaction.id : "${
             transaction.transaction.id
           }"`

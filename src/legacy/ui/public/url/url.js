@@ -26,6 +26,9 @@ import { AppStateProvider } from '../state_management/app_state';
 uiModules.get('kibana/url')
   .service('kbnUrl', function (Private) { return Private(KbnUrlProvider); });
 
+// From https://github.com/angular/angular.js/blob/197e18d232fb98a168dc6a1687b4875517506211/src/ng/location.js#L3
+const PATH_MATCH = /^([^?#]*)(\?([^#]*))?(#(.*))?$/;
+
 export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private, i18n) {
   /**
    *  the `kbnUrl` service was created to smooth over some of the
@@ -46,6 +49,37 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
    *  @type {KbnUrl}
    */
   const self = this;
+
+  /**
+   * Override the behavior of angular's $location.url() to encode/decode
+   * URL parameters
+   * @param {String} url
+   * @returns $location
+   */
+  $location.url = url => {
+    if (typeof url === 'undefined') {
+      return $location.$$url;
+    }
+
+    const match = PATH_MATCH.exec(url);
+
+    if (match[1] || url === '') {
+      $location.path(($location.$$html5 ? decodeURI : decodeURIComponent)(match[1]));
+    }
+    if (match[2] || match[1] || url === '') {
+      $location.search(match[3] || '');
+    }
+
+    $location.hash(match[5] || '');
+
+    return $location;
+  };
+
+  // This event destroys the popstate and hashchange events bound by $browser.
+  // TODO: REVIEW: Need to determine if this is breaking anything.
+  if ($injector.has('$browser')) {
+    $injector.get('$browser').$$applicationDestroyed();
+  }
 
   /**
    * Navigate to a url

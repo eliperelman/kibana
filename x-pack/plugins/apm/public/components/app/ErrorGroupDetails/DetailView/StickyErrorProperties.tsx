@@ -19,7 +19,6 @@ import { idx } from 'x-pack/plugins/apm/common/idx';
 import { APMError } from 'x-pack/plugins/apm/typings/es_schemas/ui/APMError';
 import { Transaction } from 'x-pack/plugins/apm/typings/es_schemas/ui/Transaction';
 import { KibanaLink } from '../../../shared/Links/KibanaLink';
-import { legacyEncodeURIComponent } from '../../../shared/Links/url_helpers';
 import { StickyProperties } from '../../../shared/StickyProperties';
 
 interface Props {
@@ -41,11 +40,9 @@ function TransactionLink({
     return <Fragment>{transaction.transaction.id}</Fragment>;
   }
 
-  const path = `/${
-    transaction.service.name
-  }/transactions/${legacyEncodeURIComponent(
+  const path = `/${transaction.service.name}/transactions/${encodeURIComponent(
     transaction.transaction.type
-  )}/${legacyEncodeURIComponent(transaction.transaction.name)}`;
+  )}/${encodeURIComponent(transaction.transaction.name)}`;
 
   return (
     <KibanaLink

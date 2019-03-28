@@ -31,7 +31,7 @@ export class TransactionOverviewView extends React.Component<
 > {
   public handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const { urlParams, history, location } = this.props;
-    const type = legacyEncodeURIComponent(event.target.value);
+    const type = encodeURIComponent(event.target.value);
     history.push({
       ...location,
       pathname: `/${urlParams.serviceName}/transactions/${type}`

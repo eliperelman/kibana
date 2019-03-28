@@ -7,7 +7,6 @@
 import React from 'react';
 import { Transaction } from '../../../../typings/es_schemas/ui/Transaction';
 import { KibanaLink } from './KibanaLink';
-import { legacyEncodeURIComponent } from './url_helpers';
 
 interface TransactionLinkProps {
   transaction?: Transaction;
@@ -22,7 +21,7 @@ export function getLinkProps(transaction: Transaction) {
   const traceId = transaction.trace.id;
   const transactionId = transaction.transaction.id;
   const name = transaction.transaction.name;
-  const encodedName = legacyEncodeURIComponent(name);
+  const encodedName = encodeURIComponent(name);
 
   return {
     hash: `/${serviceName}/transactions/${transactionType}/${encodedName}`,
