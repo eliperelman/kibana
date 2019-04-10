@@ -19,7 +19,6 @@ import { idx } from '../../../../../common/idx';
 import { APMError } from '../../../../../typings/es_schemas/ui/APMError';
 import { Transaction } from '../../../../../typings/es_schemas/ui/Transaction';
 import { APMLink } from '../../../shared/Links/APMLink';
-import { legacyEncodeURIComponent } from '../../../shared/Links/url_helpers';
 import { StickyProperties } from '../../../shared/StickyProperties';
 
 interface Props {
@@ -43,9 +42,9 @@ function TransactionLink({
 
   const path = `/${
     transaction.service.name
-  }/transactions/${legacyEncodeURIComponent(
+  }/transactions/${encodeURIComponent(
     transaction.transaction.type
-  )}/${legacyEncodeURIComponent(transaction.transaction.name)}`;
+  )}/${encodeURIComponent(transaction.transaction.name)}`;
 
   return (
     <APMLink
