@@ -4,17 +4,21 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { License } from './license';
+import { LicensingServiceSetup } from './licensing_service_setup';
 import { LicenseFeatureSerializer } from './types';
 
 export class LicenseFeature {
-  private serializable: LicenseFeatureSerializer = license => ({
+  private serializable: LicenseFeatureSerializer = service => ({
     name: this.name,
     isAvailable: this.isAvailable,
     isEnabled: this.isEnabled,
   });
 
-  constructor(public name: string, private feature: any = {}, private license: License) {}
+  constructor(
+    public name: string,
+    private feature: any = {},
+    private service: LicensingServiceSetup
+  ) {}
 
   public get isAvailable() {
     return !!this.feature.available;
@@ -29,6 +33,6 @@ export class LicenseFeature {
   }
 
   public toObject() {
-    return this.serializable(this.license);
+    return this.serializable(this.service);
   }
 }
