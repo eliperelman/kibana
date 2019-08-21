@@ -7,7 +7,7 @@
 import { Observable } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import moment from 'moment';
-import { CoreSetup, Logger, Plugin, PluginInitializerContext } from 'src/core/server';
+import { CoreSetup, CoreStart, Logger, Plugin, PluginInitializerContext } from 'src/core/server';
 import { LicensingConfigType, LicensingPluginSubject } from './types';
 import { LicensingConfig } from './licensing_config';
 import { LicensingPluginSetup } from './licensing_plugin_setup';
@@ -92,7 +92,10 @@ export class LicensingPlugin implements Plugin<LicensingPluginSubject, Licensing
     }
   }
 
-  private create({ clusterSource, pollingFrequency }: LicensingConfig, core: CoreSetup) {
+  private create(
+    { clusterSource, pollingFrequency }: LicensingConfig,
+    core: CoreSetup | CoreStart
+  ) {
     if (this.service$) {
       return this.service$;
     }
@@ -126,7 +129,12 @@ export class LicensingPlugin implements Plugin<LicensingPluginSubject, Licensing
     };
   }
 
-  public async start(core: CoreStart) {}
+  public async start(core: CoreStart) {
+    const config = await this.config$.pipe(first()).toPromise();
+    const service$ = this.create(config, core);
+
+    return service$;
+  }
 
   public stop() {
     if (this.poller) {
