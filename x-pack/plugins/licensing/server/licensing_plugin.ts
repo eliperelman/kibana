@@ -8,14 +8,16 @@ import { Observable } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import moment from 'moment';
 import { CoreSetup, Logger, Plugin, PluginInitializerContext } from 'src/core/server';
-import { LicensingConfigType, LicensingServiceSubject } from './types';
+import { LicensingConfigType, LicensingPluginSubject } from './types';
 import { LicensingConfig } from './licensing_config';
-import { License } from './license';
+import { LicensingPluginSetup } from './licensing_plugin_setup';
 
-export class LicensingPlugin implements Plugin<LicensingServiceSubject, LicensingServiceSubject> {
+export class LicensingPlugin implements Plugin<LicensingPluginSubject, LicensingPluginSubject> {
   private readonly logger: Logger;
   private readonly config$: Observable<LicensingConfig>;
-  private poller!: Poller<ILicense>;
+  private poller$!: Observable<number>;
+  private pollerSubscription!: Subscription;
+  private service$!: LicensingPluginSubject;
 
   constructor(private readonly context: PluginInitializerContext) {
     this.logger = this.context.logger.get();
@@ -91,19 +93,24 @@ export class LicensingPlugin implements Plugin<LicensingServiceSubject, Licensin
   }
 
   private create({ clusterSource, pollingFrequency }: LicensingConfig, core: CoreSetup) {
-    this.poller = new Poller<ILicense>(
-      pollingFrequency,
-      new License(null, {}, null, clusterSource),
-      async () => {
-        const { license, features, error } = await this.fetchInfo(
-          core,
-          clusterSource,
-          pollingFrequency
-        );
+    if (this.service$) {
+      return this.service$;
+    }
 
-        if (license !== false) {
-          return new License(license, features, error, clusterSource);
-        }
+    const service$ = new BehaviorSubject<LicensingPluginSetup>(
+      new LicensingPluginSetup(null, {}, null, clusterSource)
+    );
+
+    this.poller$ = timer(pollingFrequency);
+    this.pollerSubscription = this.poller$.subscribe(async value => {
+      const { license, features, error } = await this.fetchInfo(
+        core,
+        clusterSource,
+        pollingFrequency
+      );
+
+      if (license !== false) {
+        service$.next(new LicensingPluginSetup(license, features, error, clusterSource));
       }
     );
 
