@@ -7,19 +7,12 @@
 import { Observable } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import moment from 'moment';
-import {
-  CoreSetup,
-  CoreStart,
-  Logger,
-  Plugin as CorePlugin,
-  PluginInitializerContext,
-} from 'src/core/server';
-import { Poller } from '../../../../src/core/utils/poller';
-import { LicensingConfigType, LicensingPluginSetup, ILicense } from './types';
+import { CoreSetup, Logger, Plugin, PluginInitializerContext } from 'src/core/server';
+import { LicensingConfigType, LicensingServiceSubject } from './types';
 import { LicensingConfig } from './licensing_config';
 import { License } from './license';
 
-export class Plugin implements CorePlugin<LicensingPluginSetup> {
+export class LicensingPlugin implements Plugin<LicensingServiceSubject, LicensingServiceSubject> {
   private readonly logger: Logger;
   private readonly config$: Observable<LicensingConfig>;
   private poller!: Poller<ILicense>;
