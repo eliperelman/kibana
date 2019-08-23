@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import moment from 'moment';
 import { CoreSetup, CoreStart, Logger, Plugin, PluginInitializerContext } from 'src/core/server';
-import { LicensingConfigType, LicensingPluginSubject } from './types';
+import { LicensingConfigType, LicensingPluginSubject, ILicensingPluginSetup } from './types';
 import { LicensingConfig } from './licensing_config';
 import { LicensingPluginSetup } from './licensing_plugin_setup';
 
@@ -93,7 +93,7 @@ export class LicensingPlugin implements Plugin<LicensingPluginSubject> {
   }
 
   private create({ clusterSource, pollingFrequency }: LicensingConfig, core: CoreSetup) {
-    const service$ = new BehaviorSubject<LicensingPluginSetup>(
+    const service$ = new BehaviorSubject<ILicensingPluginSetup>(
       new LicensingPluginSetup(null, {}, null, clusterSource)
     );
 
