@@ -17,7 +17,9 @@ import {
   PluginInitializerContext,
 } from 'src/core/server';
 import { Poller } from '../../../../src/core/utils/poller';
-import { LicensingConfigType, LicensingPluginSetup, ILicense } from './types';
+import { LicensingPluginSetup, ILicensingPlugin } from '../common/types';
+import { License } from '../common/license';
+import { hasLicenseInfoChanged } from '../common/has_license_info_changed';
 import { LicensingConfig } from './licensing_config';
 import { schema } from './schema';
 

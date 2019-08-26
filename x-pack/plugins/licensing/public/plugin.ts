@@ -10,7 +10,7 @@ import {
   Plugin as CorePlugin,
   PluginInitializerContext,
 } from 'src/core/public';
-import { Poller } from 'src/core/utils/poller';
+import { Poller } from '../../../../src/core/utils/poller';
 import { LicensingPluginSetup, ILicensingPlugin } from '../common/types';
 import {
   API_ROUTE,
