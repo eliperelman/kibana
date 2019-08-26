@@ -5,7 +5,8 @@
  */
 
 import { take, skip } from 'rxjs/operators';
-import { ILicense } from './types';
+import { ILicense } from '../common/types';
+import { License } from '../common/license';
 import { Plugin } from './plugin';
 import { License } from './license';
 import { setup, setupOnly, licenseMerge } from './__fixtures__/setup';

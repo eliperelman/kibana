@@ -8,9 +8,7 @@ import { ILicense } from '../common/types';
 import { LICENSE_STATUS } from '../common/constants';
 import { LicenseFeature } from '../common/license_feature';
 import { Plugin } from './plugin';
-import { LICENSE_STATUS } from './constants';
-import { LicenseFeature } from './license_feature';
-import { setup } from './__fixtures__/setup';
+import { setup } from './test_setup';
 
 describe('license', () => {
   let plugin: Plugin;
@@ -18,6 +16,7 @@ describe('license', () => {
 
   afterEach(async () => {
     await plugin.stop();
+    sessionStorage.clear();
   });
 
   test('uid returns a UID field', async () => {

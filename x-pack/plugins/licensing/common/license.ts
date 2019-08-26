@@ -5,10 +5,9 @@
  */
 
 import { i18n } from '@kbn/i18n';
-import { createHash } from 'crypto';
 import { LicenseFeature } from './license_feature';
 import { LICENSE_STATUS, LICENSE_TYPE } from './constants';
-import { LicenseType, ILicense } from './types';
+import { LicenseType, ILicense, ILicensingPlugin } from './types';
 
 function toLicenseType(minimumLicenseRequired: LICENSE_TYPE | string) {
   if (typeof minimumLicenseRequired !== 'string') {
@@ -22,24 +21,33 @@ function toLicenseType(minimumLicenseRequired: LICENSE_TYPE | string) {
   return LICENSE_TYPE[minimumLicenseRequired as LicenseType];
 }
 
+interface LicenseArgs {
+  plugin: ILicensingPlugin;
+  license: any;
+  features: any;
+  error?: Error;
+  clusterSource?: string;
+}
+
 export class License implements ILicense {
+  private readonly plugin: ILicensingPlugin;
   private readonly hasLicense: boolean;
   private readonly license: any;
   private readonly features: any;
   private _signature!: string;
   private objectified!: any;
   private readonly featuresMap: Map<string, LicenseFeature>;
+  private error?: Error;
+  private clusterSource?: string;
 
-  constructor(
-    license: any,
-    features: any,
-    private error: Error | null,
-    private clusterSource: string
-  ) {
+  constructor({ plugin, license, features, error, clusterSource }: LicenseArgs) {
+    this.plugin = plugin;
     this.hasLicense = Boolean(license);
     this.license = license || {};
     this.features = features;
     this.featuresMap = new Map<string, LicenseFeature>();
+    this.error = error;
+    this.clusterSource = clusterSource;
   }
 
   public get uid() {
@@ -91,9 +99,11 @@ export class License implements ILicense {
       return this._signature;
     }
 
-    this._signature = createHash('md5')
-      .update(JSON.stringify(this.toObject()))
-      .digest('hex');
+    if (!this.plugin.sign) {
+      return '';
+    }
+
+    this._signature = this.plugin.sign(JSON.stringify(this.toObject()));
 
     return this._signature;
   }
@@ -169,10 +179,13 @@ export class License implements ILicense {
   }
 
   getFeature(name: string) {
-    if (!this.featuresMap.has(name)) {
-      this.featuresMap.set(name, new LicenseFeature(name, this.features[name], this));
+    let feature = this.featuresMap.get(name);
+
+    if (!feature) {
+      feature = new LicenseFeature(name, this.features[name], this);
+      this.featuresMap.set(name, feature);
     }
 
-    return this.featuresMap.get(name);
+    return feature;
   }
 }
