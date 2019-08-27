@@ -110,7 +110,7 @@ export interface ILicense {
 
 /** @public */
 export interface LicensingPluginSetup {
-  license$: BehaviorSubject<ILicense>;
+  license$: Observable<ILicense>;
 }
 /** @public */
 export type LicensingConfigType = TypeOf<typeof schema>;
