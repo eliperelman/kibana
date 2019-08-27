@@ -122,21 +122,6 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
     });
   }
 
-  private create(config: LicensingConfig) {
-    const initialLicense = new License({
-      plugin: this,
-      license: null,
-      features: {},
-      clusterSource: config.clusterSource,
-    });
-
-    this.poller = new Poller<License>(config.pollingFrequency, initialLicense, () =>
-      this.next(config)
-    );
-
-    return this.poller;
-  }
-
   public sign(serialized: string) {
     return createHash('md5')
       .update(serialized)
@@ -144,13 +129,21 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
   }
 
   public async setup(core: CoreSetup) {
-    this.core = core;
+    const { clusterSource, pollingFrequency } = this.currentConfig;
+    const initialLicense = new License({
+      plugin: this,
+      license: null,
+      features: {},
+      clusterSource,
+    });
 
-    const config = await this.config$.pipe(first()).toPromise();
-    const poller = this.create(config);
+    this.core = core;
+    this.poller = new Poller<License>(pollingFrequency, initialLicense, () =>
+      this.next(this.currentConfig)
+    );
 
     return {
-      license$: poller.subject$.asObservable(),
+      license$: this.poller.subject$.asObservable(),
     };
   }
 

@@ -108,27 +108,20 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
     });
   }
 
-  private create() {
-    const { license = null, features = {} } = this.getSession();
-    const initialLicense = new License({ plugin: this, license, features });
-
-    this.intercept();
-    this.poller = new Poller<License>(DEFAULT_POLLING_FREQUENCY, initialLicense, () => this.next());
-
-    return this.poller;
-  }
-
   public sign() {
     return this.signature;
   }
 
   public async setup(core: CoreSetup) {
-    this.core = core;
+    const { license = null, features = {} } = this.getSession();
+    const initialLicense = new License({ plugin: this, license, features });
 
-    const poller = this.create();
+    this.core = core;
+    this.intercept();
+    this.poller = new Poller<License>(DEFAULT_POLLING_FREQUENCY, initialLicense, () => this.next());
 
     return {
-      license$: poller.subject$,
+      license$: this.poller.subject$.asObservable(),
     };
   }
 
