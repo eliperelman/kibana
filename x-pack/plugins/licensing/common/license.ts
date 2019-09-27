@@ -7,7 +7,7 @@
 import { i18n } from '@kbn/i18n';
 import { LicenseFeature } from './license_feature';
 import { LICENSE_STATUS, LICENSE_TYPE } from './constants';
-import { LicenseType, ILicense, ILicensingPlugin } from './types';
+import { LicenseType, ILicense, ILicensingPlugin, RawLicense, RawFeatures } from './types';
 
 function toLicenseType(minimumLicenseRequired: LICENSE_TYPE | string) {
   if (typeof minimumLicenseRequired !== 'string') {
@@ -23,8 +23,8 @@ function toLicenseType(minimumLicenseRequired: LICENSE_TYPE | string) {
 
 interface LicenseArgs {
   plugin: ILicensingPlugin;
-  license: any;
-  features: any;
+  license?: RawLicense;
+  features?: RawFeatures;
   error?: Error;
   clusterSource?: string;
 }
@@ -32,8 +32,8 @@ interface LicenseArgs {
 export class License implements ILicense {
   private readonly plugin: ILicensingPlugin;
   private readonly hasLicense: boolean;
-  private readonly license: any;
-  private readonly features: any;
+  private readonly license: RawLicense;
+  private readonly features: RawFeatures;
   private _signature!: string;
   private objectified!: any;
   private readonly featuresMap: Map<string, LicenseFeature>;
@@ -44,7 +44,7 @@ export class License implements ILicense {
     this.plugin = plugin;
     this.hasLicense = Boolean(license);
     this.license = license || {};
-    this.features = features;
+    this.features = features || {};
     this.featuresMap = new Map<string, LicenseFeature>();
     this.error = error;
     this.clusterSource = clusterSource;
@@ -99,10 +99,6 @@ export class License implements ILicense {
       return this._signature;
     }
 
-    if (!this.plugin.sign) {
-      return '';
-    }
-
     this._signature = this.plugin.sign(JSON.stringify(this.toObject()));
 
     return this._signature;
@@ -111,6 +107,10 @@ export class License implements ILicense {
   isOneOf(candidateLicenses: string | string[]) {
     if (!Array.isArray(candidateLicenses)) {
       candidateLicenses = [candidateLicenses];
+    }
+
+    if (!this.type) {
+      return false;
     }
 
     return candidateLicenses.includes(this.type);

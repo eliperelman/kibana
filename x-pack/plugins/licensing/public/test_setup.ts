@@ -80,7 +80,7 @@ export async function setup(xpackInfo = {}) {
     )
   );
 
-  const plugin = new Plugin(coreMock.createPluginInitializerContext({}));
+  const plugin = new Plugin();
   const { license$ } = await plugin.setup(coreSetup);
   const license = await license$
     .pipe(

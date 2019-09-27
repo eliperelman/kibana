@@ -23,6 +23,8 @@ import { hasLicenseInfoChanged } from '../common/has_license_info_changed';
 import { LicensingConfig } from './licensing_config';
 import { schema } from './schema';
 
+type LicensingConfigType = TypeOf<typeof schema>;
+
 export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugin {
   private readonly logger: Logger;
   private readonly config$: Observable<LicensingConfig>;
@@ -97,7 +99,6 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
 
       return new License({
         plugin: this,
-        license: null,
         features: {},
         error: err,
         clusterSource: config.clusterSource,
@@ -130,12 +131,7 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
 
   public async setup(core: CoreSetup) {
     const { clusterSource, pollingFrequency } = this.currentConfig;
-    const initialLicense = new License({
-      plugin: this,
-      license: null,
-      features: {},
-      clusterSource,
-    });
+    const initialLicense = new License({ plugin: this, features: {}, clusterSource });
 
     this.core = core;
     this.poller = new Poller<License>(pollingFrequency, initialLicense, () =>

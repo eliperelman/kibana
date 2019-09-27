@@ -4,14 +4,9 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import {
-  CoreSetup,
-  CoreStart,
-  Plugin as CorePlugin,
-  PluginInitializerContext,
-} from 'src/core/public';
+import { CoreSetup, CoreStart, Plugin as CorePlugin } from 'src/core/public';
 import { Poller } from '../../../../src/core/utils/poller';
-import { LicensingPluginSetup, ILicensingPlugin } from '../common/types';
+import { LicensingPluginSetup, ILicensingPlugin, ObjectifiedLicense } from '../common/types';
 import {
   API_ROUTE,
   LICENSING_SESSION,
@@ -29,8 +24,6 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
   private removeInterceptor!: () => void;
   private signature = '';
 
-  constructor(private readonly context: PluginInitializerContext) {}
-
   private getSession() {
     const raw = sessionStorage.getItem(LICENSING_SESSION);
     const signature = sessionStorage.getItem(LICENSING_SESSION_SIGNATURE);
@@ -43,7 +36,7 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
     return json;
   }
 
-  private setSession(license: any, signature?: string) {
+  private setSession(license: ObjectifiedLicense, signature?: string) {
     sessionStorage.setItem(LICENSING_SESSION, JSON.stringify(license));
 
     if (signature) {
@@ -71,7 +64,7 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
     } catch (err) {
       // Prevent reusing stale license if the fetch operation fails
       this.clearSession();
-      return new License({ plugin: this, license: null, features: {}, error: err });
+      return new License({ plugin: this, features: {}, error: err });
     }
   }
 
@@ -93,14 +86,14 @@ export class Plugin implements CorePlugin<LicensingPluginSetup>, ILicensingPlugi
   }
 
   private intercept() {
-    this.core.http.intercept({
+    this.removeInterceptor = this.core.http.intercept({
       response: httpResponse => {
         const signature = httpResponse.response!.headers.get(SIGNATURE_HEADER) || '';
 
         if (signature !== this.signature) {
           this.signature = signature;
 
-          if (!httpResponse.request.url.includes(API_ROUTE)) {
+          if (!httpResponse.request!.url.includes(API_ROUTE)) {
             this.refresh();
           }
         }

@@ -11,6 +11,43 @@ import { LicenseFeature } from './license_feature';
 
 /**
  * @public
+ * Results from remote request fetching a raw license.
+ */
+export interface RawLicense {
+  /**
+   * UID for license.
+   */
+  uid?: string;
+
+  /**
+   * The validity status of the license.
+   */
+  status?: string;
+
+  /**
+   * Unix epoch of the expiration date of the license.
+   */
+  expiry_date_in_millis?: number;
+
+  /**
+   * The license type, being usually one of basic, standard, gold, platinum, or trial.
+   */
+  type?: string;
+}
+
+/**
+ * @public
+ * Results from remote request fetching raw featuresets.
+ */
+export interface RawFeatures {
+  [key: string]: {
+    available: boolean;
+    enabled: boolean;
+  };
+}
+
+/**
+ * @public
  * Results from checking if a particular license type meets the minimum
  * requirements of the license type.
  */
@@ -98,7 +135,7 @@ export interface ILicense {
   /**
    * Receive a serialized plain object of the license.
    */
-  toObject(): any;
+  toObject(): ObjectifiedLicense;
 
   /**
    * A specific API for interacting with the specific features of the license.
@@ -108,9 +145,19 @@ export interface ILicense {
 }
 
 /** @public */
+export interface ObjectifiedLicense {
+  license: {
+    type: LicenseType;
+    isActive: boolean;
+    expiryDateInMillis: number;
+  };
+  features: any[];
+}
+
+/** @public */
 export interface ILicensingPlugin {
   refresh(): void;
-  sign?(serialized: string): string;
+  sign(serialized: string): string;
 }
 
 /** @public */
